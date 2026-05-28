@@ -1,4 +1,4 @@
-# GEMINI.md
+# AGENTS.md
 
 This file describes the project structure, conventions, and guidance for AI agents
 (and human contributors) working on llamabox.
