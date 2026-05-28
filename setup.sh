@@ -89,8 +89,19 @@ create() {
     fi
 
     info "Creating Distrobox container: $CONTAINER_NAME using image $image"
-    # Use --pull to ensure we have the latest Fedora 44 based images
-    distrobox create --name "$CONTAINER_NAME" --image "$image" --pull --yes
+
+    local distrobox_create_flags=()
+    if [ "$BACKEND" = "cuda" ]; then
+        if [ -f "/etc/cdi/nvidia.yaml" ]; then
+            # CDI spec found (e.g. on Bazzite/Silverblue with nvidia-container-toolkit)
+            distrobox_create_flags+=(--additional-flags "--device nvidia.com/gpu=all")
+        else
+            # Fallback to legacy --nvidia integration
+            distrobox_create_flags+=(--nvidia)
+        fi
+    fi
+
+    distrobox create --name "$CONTAINER_NAME" --image "$image" --pull --yes "${distrobox_create_flags[@]}"
 
     info "Building llama.cpp inside the container..."
     distrobox enter "$CONTAINER_NAME" -- /usr/bin/build-llama
