@@ -5,7 +5,16 @@
 
 set -e
 
-LLAMA_DIR="$HOME/llama.cpp"
+if [ -n "$LLAMABOX_HOME_SOURCE" ]; then
+    LLAMA_DIR="$HOME/llama.cpp"
+else
+    LLAMA_DIR="/opt/llama.cpp"
+    # Ensure the directory exists and is writable by the current user
+    if [ ! -d "$LLAMA_DIR" ]; then
+        sudo mkdir -p "$LLAMA_DIR"
+        sudo chown "$(id -u):$(id -g)" "$LLAMA_DIR"
+    fi
+fi
 BUILD_DIR="$LLAMA_DIR/build"
 
 # 1. Clone or update llama.cpp

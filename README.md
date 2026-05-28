@@ -66,6 +66,10 @@ The `setup.sh` script supports several subcommands and flags:
   ```bash
   ./setup.sh --backend vulkan
   ```
+- **Home Source Directory:** By default, `llamabox` builds `llama.cpp` inside the container at `/opt/llama.cpp` to keep your home directory clean. If you want to persist the source code and build cache across container removals or upgrades, you can opt to build in your home directory instead:
+  ```bash
+  ./setup.sh --home-source
+  ```
 - **Upgrade:** Re-pull the image and rebuild `llama.cpp` to get the latest updates:
   ```bash
   ./setup.sh upgrade

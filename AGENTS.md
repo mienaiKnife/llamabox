@@ -67,7 +67,8 @@ not the latest, document why.
   in `build.yml` if reproducibility matters, otherwise accept rolling updates.
 - **Build Isolation**: To prevent host pollution and cache poisoning when switching
   between GPU backends, the build script uses variant-specific build directories
-  in the user's home (e.g., `~/llama.cpp/build-cuda`, `~/llama.cpp/build-rocm`).
+  in the container (e.g., `/opt/llama.cpp/build-cuda`, `/opt/llama.cpp/build-rocm`).
+  Set `LLAMABOX_HOME_SOURCE=1` to use `~/llama.cpp` instead.
 
 ### Package Naming
 
@@ -111,6 +112,10 @@ the container.
    ```
 7. Support `setup.sh remove` and `setup.sh upgrade` subcommands, mirroring
    Davincibox's approach.
+8. Provide a `--home-source` flag so users can opt to clone and build llama.cpp
+   in `$HOME/llama.cpp` rather than the default container-internal path
+   (`/opt/llama.cpp`). This lets power users persist source and build caches
+   across container removals/upgrades.
 
 ### Exit Codes
 
@@ -129,7 +134,11 @@ responsible for cloning or updating llama.cpp and running the CMake build.
 ### Shared Logic (all variants)
 
 ```bash
-LLAMA_DIR="$HOME/llama.cpp"
+if [ -n "$LLAMABOX_HOME_SOURCE" ]; then
+    LLAMA_DIR="$HOME/llama.cpp"
+else
+    LLAMA_DIR="/opt/llama.cpp"
+fi
 
 if [ ! -d "$LLAMA_DIR" ]; then
     git clone https://github.com/ggml-org/llama.cpp "$LLAMA_DIR"

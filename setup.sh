@@ -104,7 +104,11 @@ create() {
     distrobox create --name "$CONTAINER_NAME" --image "$image" --pull --yes "${distrobox_create_flags[@]}"
 
     info "Building llama.cpp inside the container..."
-    distrobox enter "$CONTAINER_NAME" -- /usr/bin/build-llama
+    local build_cmd=("/usr/bin/build-llama")
+    if [ -n "$LLAMABOX_HOME_SOURCE" ]; then
+        build_cmd=("env" "LLAMABOX_HOME_SOURCE=1" "/usr/bin/build-llama")
+    fi
+    distrobox enter "$CONTAINER_NAME" -- "${build_cmd[@]}"
 
     info "Ensuring host export directory exists: $HOME/.local/bin"
     mkdir -p "$HOME/.local/bin"
@@ -136,7 +140,33 @@ upgrade() {
 
 # --- Main ---
 
-case "$1" in
+# Parse global flags before the command
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --backend)
+            BACKEND="$2"
+            shift 2
+            ;;
+        --home-source)
+            LLAMABOX_HOME_SOURCE=1
+            shift
+            ;;
+        create|remove|upgrade)
+            break
+            ;;
+        "")
+            break
+            ;;
+        *)
+            error "Unknown option: $1"
+            ;;
+    esac
+done
+
+COMMAND="${1:-create}"
+shift $(( $# > 0 ? 1 : 0 ))
+
+case "$COMMAND" in
     remove)
         remove
         ;;
@@ -144,23 +174,10 @@ case "$1" in
         upgrade
         ;;
     create|"")
-        # Handle optional --backend flag for create
-        shift $(( $# > 0 ? 1 : 0 ))
-        while [[ $# -gt 0 ]]; do
-            case $1 in
-                --backend)
-                    BACKEND="$2"
-                    shift 2
-                    ;;
-                *)
-                    error "Unknown option: $1"
-                    ;;
-            esac
-        done
         create
         ;;
     *)
-        echo "Usage: $0 [create|remove|upgrade] [--backend cuda|rocm|sycl|vulkan]"
+        echo "Usage: $0 [create|remove|upgrade] [--backend cuda|rocm|sycl|vulkan] [--home-source]"
         exit 1
         ;;
 esac
