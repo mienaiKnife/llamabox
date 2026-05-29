@@ -10,6 +10,10 @@ RUN dnf install -y --refresh --nogpgcheck \
     vulkan-headers \
     glslc \
     libshaderc-devel \
+    spirv-headers-devel \
+    spirv-tools \
+    spirv-tools-devel \
+    vulkan-tools \
     && dnf clean all
 
 COPY scripts/build-llama.sh /usr/bin/build-llama
