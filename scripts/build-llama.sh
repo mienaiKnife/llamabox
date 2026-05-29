@@ -9,18 +9,27 @@ if [ -n "$LLAMABOX_HOME_SOURCE" ]; then
     LLAMA_DIR="$HOME/llama.cpp"
 else
     LLAMA_DIR="/opt/llama.cpp"
-    # Ensure the directory exists and is writable by the current user
-    if [ ! -d "$LLAMA_DIR" ]; then
-        sudo mkdir -p "$LLAMA_DIR"
-        sudo chown "$(id -u):$(id -g)" "$LLAMA_DIR"
-    fi
 fi
 BUILD_DIR="$LLAMA_DIR/build"
 
 # 1. Clone or update llama.cpp
-if [ ! -d "$LLAMA_DIR" ]; then
-    echo "Cloning llama.cpp..."
-    git clone https://github.com/ggml-org/llama.cpp "$LLAMA_DIR"
+if [ ! -d "$LLAMA_DIR/.git" ]; then
+    if [ -d "$LLAMA_DIR" ] && [ -z "$(ls -A "$LLAMA_DIR" 2>/dev/null)" ]; then
+        rmdir "$LLAMA_DIR" 2>/dev/null || sudo rmdir "$LLAMA_DIR" 2>/dev/null || true
+    fi
+    if [ ! -d "$LLAMA_DIR" ]; then
+        echo "Cloning llama.cpp..."
+        if [ -n "$LLAMABOX_HOME_SOURCE" ]; then
+            git clone https://github.com/ggml-org/llama.cpp "$LLAMA_DIR"
+        else
+            sudo mkdir -p "$(dirname "$LLAMA_DIR")"
+            sudo git clone https://github.com/ggml-org/llama.cpp "$LLAMA_DIR"
+            sudo chown -R "$(id -u):$(id -g)" "$LLAMA_DIR"
+        fi
+    else
+        echo "Error: $LLAMA_DIR exists but is not a git repository."
+        exit 1
+    fi
 fi
 
 cd "$LLAMA_DIR"

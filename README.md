@@ -85,4 +85,4 @@ This is a vibecoded project. The NVIDIA backend is currently the primary testing
 
 ## Development
 
-For detailed architecture information, repository structure, and contribution guidelines, please refer to [GEMINI.md](GEMINI.md).
+For detailed architecture information, repository structure, and contribution guidelines, please refer to [AGENTS.md](AGENTS.md).
